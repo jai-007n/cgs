@@ -1,0 +1,8 @@
+{
+  "JWT_PRIVATE_KEY": "e8c35f7f8b6eace0980a57ab50ae87bb",
+  "JWT_PRIVATE_REFRESH_KEY": "secret_refresh",
+  "ADMIN_APP_URL": "http://localhost:3000/",
+  "ADMIN_PUBLIC_URL": "http://localhost:3000/",
+  "environment": "test",
+  "port": 3000
+}

@@ -1,0 +1,21 @@
+{
+  "username": "root",
+  "password": "",
+  "database": "posiitive",
+  "host": "localhost",
+  "dialect": "mysql",
+  "JWT_PRIVATE_KEY": "secret",
+  "JWT_PRIVATE_REFRESH_KEY": "secret_refresh",
+  "ADMIN_APP_URL": "http://localhost:3000/",
+  "ADMIN_PUBLIC_URL": "http://localhost:3000/",
+  "environment": "development",
+  "port": 3000,
+  "apiPrefix":"/api/v1/",
+   "mongo": {
+        "protocol": "",
+        "username": "root",
+        "password": "",
+        "database": "cgs",
+        "url":"mongodb://localhost:27017"
+    }
+}
