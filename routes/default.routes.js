@@ -1,4 +1,5 @@
 const express = require('express');
+const {LocalLogger} = require("./../core/utility/logger.js");
 const defaultRouter = express.Router();
 
 module.exports.defaultRoutes = (router) => {
@@ -19,6 +20,21 @@ module.exports.defaultRoutes = (router) => {
             code, 
             message: `${req.method} method not allowed for route ${req.url}`
         });
+    });
+
+     // check for the logger class is working or not
+    defaultRouter.get('/logger', (req, res) => {
+        const code = 405;
+        const logger=new LocalLogger(
+                    'Default',
+                    'Default otp logger'
+                );
+        return res.status(code).json({
+            code, 
+            message: `${req.method} method not allowed for route ${req.url}`,
+            logMessage: logger
+        });
+       
     });
 
     // // Catch all 404 not found route
