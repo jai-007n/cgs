@@ -6,6 +6,8 @@ const helmet = require('helmet');
 const path = require('path');
 const config = require('config');
 const { setupRoutes } = require('./initializers/setupRoutes');
+const DDLUtility = require('../core/utility/DDLUtility')
+const Database = require('./mongo');
 
 module.exports = class App {
 
@@ -34,12 +36,15 @@ module.exports = class App {
         this.app.use('/public/', express.static('./public/Images'))
         this.setRoutes();
         this.notFound();
+        const args = process.argv.slice(2);
+        console.log(args)
+        if (args.length > 0 && args[0] === '--init') { this.initiateDDL(); }
     }
 
-    
+
 
     setRoutes() {
-       setupRoutes(this.app);
+        setupRoutes(this.app);
         // error handler
         this.app.use(function (err, req, res, next) {
             if (err) {
@@ -51,6 +56,17 @@ module.exports = class App {
             }
             next()
         });
+    }
+
+    initiateDDL() {
+        (async () => {
+            console.log("DDL class Calling")
+            const db = new Database(config.get('mongo'));
+            await db.resetMongo();
+            await DDLUtility.addDefaultRole();
+            await DDLUtility.defaultSuperAdmin();
+            process.exit();
+        })();
     }
 
     notFound() {
