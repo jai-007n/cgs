@@ -18,14 +18,22 @@ module.exports = class App {
             process.exit()
         }
         this.app.use(helmet());
-        // require('./swagger-setup')(this.app);
+
         this.app.use(cors({
-            origin: '*',
+            origin: 'http://localhost:5173',
             preflightContinue: true,
+            optionsSuccessStatus: 204,
             methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH', 'OPTIONS'],
             allowedHeaders: ['Origin', 'X-Requested-With', 'content-disposition',
-                'Content-Type', 'Accept', 'Authorization', 'x-auth-token', 'x-time-zone', 'x-hmac-token']
+                'Content-Type', 'Accept', 'Authorization', 'x-auth-token', 'x-time-zone', 'x-hmac-token'],
+            credentials: true
         }));
+        // 2. Handle OPTIONS requests
+       
+        this.app.options(/(.*)/, (req, res) => {
+            res.sendStatus(204);
+        });
+
         this.app.use(compression());
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
