@@ -85,6 +85,7 @@ userSchema.methods.generateAuthToken = function () {
         isAdmin: (this.isAdmin) ? this.isAdmin : false,
         last_login_at: this.last_login_at,
         role: this.role,
+        freshLogin: this.freshLogin
     }, config.get('JWT_PRIVATE_KEY'), {
         expiresIn: "10h",
     });
@@ -96,6 +97,7 @@ userSchema.methods.generateRefreshToken = function () {
         isAdmin: (this.isAdmin) ? this.isAdmin : false,
         last_login_at: this.last_login_at,
         role: this.role,
+        freshLogin: this.freshLogin
     }, config.get('JWT_PRIVATE_REFRESH_KEY'), {
         expiresIn: "90d",
     });
@@ -111,11 +113,13 @@ userSchema.virtual('roles', {
 userSchema.pre('save', async function (next) {
     const now = Date.now();
     const doc = this;
-    doc.updated = now
+    doc.updatedAt = now
+
     if (!doc.createdAt) {
         doc.createdAt = now;
     }
-    doc.password = await encryptPassword(doc);
+    if (this.isNew || this.isModified('password'))
+        doc.password = await encryptPassword(doc);
 
     if (next) next();
 });
@@ -155,7 +159,9 @@ function validatePassword(driver) {
             "string.empty": ` name must contain a value.`,
             "any.required": ` name is a required.`
         }),
-        password: Joi.string().min(8).max(255).regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+_!@#$%^&*.,?]).{8,32}$/).optional().allow("").strict().messages({
+        password: Joi.string().min(8).max(255)
+        // .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[-+_!@#$%^&*.,?]).{8,32}$/)
+        .optional().allow("").strict().messages({
             "string.base": `password should be a type of string`,
             "string.min": `password should be  at least 8 characters long.`,
             "string.max": `password should not be greater than 255 characters.`,

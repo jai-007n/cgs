@@ -37,7 +37,6 @@ module.exports = class App {
         this.setRoutes();
         this.notFound();
         const args = process.argv.slice(2);
-        console.log(args)
         if (args.length > 0 && args[0] === '--init') { this.initiateDDL(); }
     }
 

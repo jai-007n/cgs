@@ -1,9 +1,9 @@
 const bcrypt = require('bcryptjs');
-const { User } = require('../../model/user.model');
-
+const { User, validatePassword } = require('../../model/user.model');
+const errorBag = require('../../utility/common');
 
 async function login(req, res) {
-    const { email, password,remember_me } = req.body;
+    const { email, password, remember_me } = req.body;
     let code = 200;
     try {
 
@@ -25,12 +25,11 @@ async function login(req, res) {
                 message: 'invalid_email_or_password',
             })
         }
-        let token=user.generateAuthToken()
-        if(remember_me){
-            user.refresh_token=user.generateRefreshToken()
+        let token = user.generateAuthToken()
+        if (remember_me) {
+            user.refresh_token = user.generateRefreshToken()
             user.save()
         }
-        
         return res.status(code).json({
             status: true,
             code, token, user,
@@ -46,55 +45,73 @@ async function login(req, res) {
 
 }
 
-
 async function logout(req, res) {
-try {
-        let result = await User.findByIdAndUpdate(req.user._id, {
+    try {
+        await User.findByIdAndUpdate(req.user._id, {
             $set: {
                 refresh_token: null,
+                freshLogin: !freshLogin
             }
-        }, {new: true, select: "-password"})
+        })
 
-        return res.status(200).json({
+        return res.status(204).json({
             status: true,
-            code: 200,
+            code: 204,
             message: "logout successfully",
-            user: result,
         });
     } catch (ex) {
-        res.status(400).json({
+        return res.status(500).json({
             status: false,
-            code: 400,
+            code: 500,
             message: ex.message,
         });
     }
 }
 
-async function getProfile(ctx) {
-   try {
-        const result = await User.findById(ctx.user.userId)
-        ctx.status=200
-        return ctx.body = {
+async function getProfile(req, res) {
+    try {
+        const user = await User.findById(req.user?._id)
+        let code = 200
+        return res.status(code).json({
             status: true,
-            code: 200,
-            message: "User fetched",
-            user: result
-        };
-        if (!result) return ctx.body = {
-            status: false,
-            code: 404,
-            message: "The User with the given ID was not found.",
-        };
-        
-
+            code, user,
+            message: "User profile !",
+        });
     } catch (ex) {
-        ctx.status=500
-        return ctx.body = {
+        return res.status(500).json({
             status: false,
             code: 500,
             message: ex.message,
-        };
+        });
     }
+}
+
+async function updateProfile(req, res) {
+    let { error } = validatePassword(req.body);
+    if (error) return res.status(422).send(errorBag(error));
+
+    let userExist = await User.findById(req.user._id)
+    if (!userExist) {
+        return res.status(404).json({
+            status: false,
+            code: 404,
+            message: "No user find for given Id.",
+        });
+    }
+
+    const { name, password } = req.body
+    if (password !== '' && password !== null)
+        userExist.password = password;
+    userExist.name = name
+    // userExist.freshLogin = !userExist.freshLogin
+    await userExist.save()
+
+    return res.status(200).json({
+        status: true,
+        code: 200,
+        message: "Profile update successfully.",
+        user: userExist,
+    });
 }
 
 
@@ -102,3 +119,4 @@ async function getProfile(ctx) {
 module.exports.login = login
 module.exports.logout = logout
 module.exports.getProfile = getProfile
+module.exports.updateProfile = updateProfile
