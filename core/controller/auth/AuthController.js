@@ -47,12 +47,13 @@ async function login(req, res) {
 
 async function logout(req, res) {
     try {
-        await User.findByIdAndUpdate(req.user._id, {
-            $set: {
-                refresh_token: null,
-                freshLogin: !freshLogin
-            }
-        })
+        await User.findOneAndUpdate({ _id: req.user._id },
+            [{
+                $set: {
+                    freshLogin: { $not: "$freshLogin" },
+                    refresh_token: null
+                }
+            }])
 
         return res.status(204).json({
             status: true,
