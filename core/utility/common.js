@@ -17,4 +17,6 @@ function errorBag(errors) {
     return errorsBag
 }
 
+
+
 module.exports = errorBag;

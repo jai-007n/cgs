@@ -87,7 +87,7 @@ userSchema.methods.generateAuthToken = function () {
         role: this.role,
         freshLogin: this.freshLogin
     }, config.get('JWT_PRIVATE_KEY'), {
-        expiresIn: "10h",
+        expiresIn: "1m",
     });
 }
 

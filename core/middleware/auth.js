@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { jwtDecode } = require('jwt-decode');
 const config = require('config');
 const { User } = require('../model/user.model');
 
@@ -8,7 +9,7 @@ module.exports = async function (req, res, next) {
     if (!token) return res.status(401).json({
         status: false,
         code: 401,
-        message: "unauthenticated user"
+        message: "Unauthenticated user"
     })
 
     try {
@@ -19,15 +20,44 @@ module.exports = async function (req, res, next) {
             return res.status(401).json({
                 status: false,
                 code: 401,
-                message: "unauthenticated user"
+                message: "Unauthenticated user"
             })
         }
         next();
     } catch (ex) {
+        console.log(ex.name === 'TokenExpiredError', ex.name)
+        if (ex.name === 'TokenExpiredError') {
+            const decodedToken = jwtDecode(token);
+            const userActive = await User.findById(decodedToken._id)
+            if (userActive?.refresh_token) {
+                try {
+                    const decoded = jwt.verify(userActive.refresh_token, config.get('JWT_PRIVATE_REFRESH_KEY'));
+                    // In a real application, you would also check if this refresh token
+                    // is valid in your database (e.g., not revoked, associated with the user).
+                    const token = userActive.generateAuthToken();
+                    // Optional: Generate a new refresh token (rolling refresh)
+                    const newRefreshToken = userActive.generateRefreshToken();
+                    userActive.refresh_token = newRefreshToken;
+                    userActive.save();
+
+                    return res.status(201).json({
+                        status: true,
+                        code: 201,token,
+                        message: "Token Refreshed"
+                    })
+                } catch (error) {
+                    return res.status(401).json({
+                        status: false,
+                        code: 401,
+                        message: "Invalid Token or expired R",
+                    })
+                }
+            }
+        }
         return res.status(401).json({
             status: false,
             code: 401,
-            message: req.t("invalid_token"),
+            message: "Invalid Token or expired",
         })
     }
 
