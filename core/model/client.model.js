@@ -49,7 +49,6 @@ const Client = mongoose.model('Client', clientSchema);
 
 function validateClient(client) {
     const schema = Joi.object({
-
         name: Joi.string().min(2).max(255)
             // .regex(/^[a-zA-Z0-9()'#*^$@ _.-]*$/)
             .required().messages({

@@ -31,7 +31,7 @@ async function updateClient(req, res) {
 
 async function deleteClient(req, res) {
     try {
-        const result = await Client.findByIdAndRemove(req.params.id)
+        const result = await Client.findByIdAndDelete(req.params.id)
         if (!result)
             return res.status(404).json({
                 status: false,
@@ -53,9 +53,9 @@ async function deleteClient(req, res) {
 }
 
 async function createNewClient(req, res) {
+
     let { error } = validateClient(req.body);
     if (error) return res.status(422).send(errorBag(error));
-
     try {
         let sendResult = _.pick(req.body, ['name', 'description', 'address', 'contact'])
         let result = new Client(sendResult);

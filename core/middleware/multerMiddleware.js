@@ -28,6 +28,8 @@ const multerMiddleware = (uploadS3) => {
                 next();
             }
         );
+
+        uploadLocal();
     }
 
 

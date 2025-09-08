@@ -11,7 +11,7 @@ module.exports = async function (req, res, next) {
         code: 401,
         message: "Unauthenticated user"
     })
-
+          
     try {
         req.user = jwt.verify(token, config.get('JWT_PRIVATE_KEY'));
         const userActive = await User.findById(req.user._id)
@@ -25,7 +25,6 @@ module.exports = async function (req, res, next) {
         }
         next();
     } catch (ex) {
-        console.log(ex.name === 'TokenExpiredError', ex.name)
         if (ex.name === 'TokenExpiredError') {
             const decodedToken = jwtDecode(token);
             const userActive = await User.findById(decodedToken._id)
@@ -40,9 +39,10 @@ module.exports = async function (req, res, next) {
                     userActive.refresh_token = newRefreshToken;
                     userActive.save();
 
-                    return res.status(201).json({
+                    return res.status(401).json({
                         status: true,
-                        code: 201,token,
+                        isNewToken:true,
+                        code: 401,token,
                         message: "Token Refreshed"
                     })
                 } catch (error) {
